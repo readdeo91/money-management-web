@@ -1,3 +1,6 @@
+# money-management-web
+This application is the frontend for the money-management-svc. This application is in a really early stage.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
