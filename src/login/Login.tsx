@@ -12,9 +12,8 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import axios from "axios";
-import {toast} from "react-toastify";
 import { useNavigate } from 'react-router-dom';
+import {AuthenticateUserApiArg, useAuthenticateUserMutation} from "../store/moneyManagementApiGenerated";
 
 function Copyright(props: any) {
   return (
@@ -32,62 +31,91 @@ function Copyright(props: any) {
 // TODO remove, this demo shouldn't need to reset the theme.
 const defaultTheme = createTheme();
 
-export default function SignUp() {
+interface loginData {
+  accessToken: string,
+  tokenType: string
+}
+
+export default function LogIn() {
   const navigate = useNavigate();
+  const [authenticateUser, {data: authData, isLoading, isSuccess, error, isError }] = useAuthenticateUserMutation();
+
+  let loginRequest: AuthenticateUserApiArg = { loginRequest: {
+      usernameOrEmail: "",
+      password: ""
+    }}
+
+  if (isLoading) {
+  } else if (isSuccess) {
+    if (authData !== undefined) {
+      let authDataContainer = authData as loginData
+      localStorage.setItem("auth", authDataContainer.accessToken);
+      setTimeout(() => {
+        navigate('/dashboard')
+      }, 500)
+    }
+  } else if (isError) {
+    // TODO error toast
+  }
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    let loginRequestBody = {
-      usernameOrEmail: data.get('usernameOrEmail'),
-      password: data.get('password')
-    };
-    console.log(loginRequestBody);
+    loginRequest.loginRequest.usernameOrEmail = data.get('usernameOrEmail') as string
+    loginRequest.loginRequest.password = data.get('password') as string
 
-    axios
-        .post("http://localhost:8080/api/auth/signin", loginRequestBody, {
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'Access-Control-Allow-Origin': '*',
-            'Access-Control-Allow-Headers': '*',
-            'Access-Control-Allow-Credentials': 'true'
-          },
-        })
-        .then(function (response) {
-          console.log(response);
-          if (response.data.success === false) {
-            toast.error(response.data.error, {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: true,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: false,
-              progress: 0,
-              toastId: "my_toast",
-            });
-          } else {
-            toast.success(response.data.message, {
-              position: "top-right",
-              autoClose: 3000,
-              hideProgressBar: true,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: false,
-              progress: 0,
-              toastId: "my_toast",
-            });
-            localStorage.setItem("auth", response.data.accessToken);
+    authenticateUser(loginRequest)
 
-            setTimeout(() => {
-              navigate('/dashboard');
-            }, 3000);
-          }
-        })
-        .catch(function (error) {
-          console.error(error);
-        });
+    // let loginRequestBody = {
+    //   usernameOrEmail: data.get('usernameOrEmail'),
+    //   password: data.get('password')
+    // };
+    // console.log(loginRequestBody);
+
+    // axios
+    //     .post("http://localhost:8080/api/auth/signin", loginRequestBody, {
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //         Accept: 'application/json',
+    //         'Access-Control-Allow-Origin': '*',
+    //         'Access-Control-Allow-Headers': '*',
+    //         'Access-Control-Allow-Credentials': 'true'
+    //       },
+    //     })
+    //     .then(function (response) {
+    //       console.log(response);
+    //       if (response.data.success === false) {
+    //         toast.error(response.data.error, {
+    //           position: "top-right",
+    //           autoClose: 3000,
+    //           hideProgressBar: true,
+    //           closeOnClick: true,
+    //           pauseOnHover: true,
+    //           draggable: false,
+    //           progress: 0,
+    //           toastId: "my_toast",
+    //         });
+    //       } else {
+    //         toast.success(response.data.message, {
+    //           position: "top-right",
+    //           autoClose: 3000,
+    //           hideProgressBar: true,
+    //           closeOnClick: true,
+    //           pauseOnHover: true,
+    //           draggable: false,
+    //           progress: 0,
+    //           toastId: "my_toast",
+    //         });
+    //         localStorage.setItem("auth", response.data.accessToken);
+    //
+    //         setTimeout(() => {
+    //           navigate('/dashboard');
+    //         }, 3000);
+    //       }
+    //     })
+    //     .catch(function (error) {
+    //       console.error(error);
+    //     });
   }
 
   return (
